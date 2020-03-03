@@ -10,9 +10,12 @@ public class CoinMan extends ApplicationAdapter {
 	Texture background;
 	Texture[] man;
 
-	int manState;
-
+	int manState;	// to make it look like he's walking
 	int pause = 0;	// because otherwise the man runs way too fast
+	float gravity = 0.2f;	// how quickly he falls down
+	float velocity = 0;		// the y-axis velocity
+	int manY = 0;	// the y-axis position
+
 
 	@Override
 	public void create () {
@@ -23,6 +26,8 @@ public class CoinMan extends ApplicationAdapter {
 		man[1] = new Texture("frame-2.png");
 		man[2] = new Texture("frame-3.png");
 		man[3] = new Texture("frame-4.png");
+
+		manY = Gdx.graphics.getHeight()/2;
 	}
 
 	@Override
@@ -40,10 +45,25 @@ public class CoinMan extends ApplicationAdapter {
 			}
 		}
 
+		// make the guy fall
+		velocity += gravity;
+		manY -= velocity;
+
+		// make him run on the ground, not fall below the ground
+		if(manY <= 0){
+			manY = 0;
+		}
+
+		// on screen touch...
+		if(Gdx.input.justTouched()){
+			// make the guy jump
+			velocity = -10;
+		}
+
 		batch.begin();
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		// now the man appears on top of hte background
-		batch.draw(man[manState], Gdx.graphics.getWidth()/2 - man[manState].getWidth()/2, Gdx.graphics.getHeight()/2 - man[manState ].getHeight()/2);	// divided by 2 to show on the center fo the screen
+		batch.draw(man[manState], Gdx.graphics.getWidth()/2 - man[manState].getWidth()/2, manY);	// divided by 2 to show on the center fo the screen
 
 
 		// in the end, when we have everything we want showing on screen
