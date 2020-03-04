@@ -72,68 +72,16 @@ public class CoinMan extends ApplicationAdapter {
 		// this method render() keeps being called on and on and on...
 		batch.begin();
 
-		// show the background
-		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		drawBackground();
 
 		if(gameState == 1){
 			// GAME IS LIVE
+			generateCoins();
+			generateBombs();
 
-			coinCount++;
-			// generate a coin every 100 renders
-			if(coinCount >= 100){
-				coinCount = 0;
-				makeCoin();
-			}
-
-			coinRectangles.clear();
-			// loop thought the coins to make them move
-			for(int i=0; i<coinXs.size(); i++){
-				batch.draw(coin, coinXs.get(i), coinYs.get(i));
-				coinXs.set(i, coinXs.get(i)-4);
-				coinRectangles.add(new Rectangle(coinXs.get(i), coinYs.get(i), coin.getWidth(), coin.getHeight()));
-			}
-
-			bombCount++;
-			// generate a coin every 100 renders
-			if(bombCount >= 271){
-				bombCount = 0;
-				makeBomb();
-			}
-
-			bombRectangles.clear();
-			// loop thought the coins to make them move
-			for(int i=0; i<bombXs.size(); i++){
-				batch.draw(bomb, bombXs.get(i), bombYs.get(i));
-				bombXs.set(i, bombXs.get(i)-6);
-				bombRectangles.add(new Rectangle(bombXs.get(i), bombYs.get(i), bomb.getWidth(), bomb.getHeight()));
-			}
-
-
-			pause++;
-			// make the man move once every 8 renders
-			if(pause >= 8) {
-				pause = 0;
-				manState++;
-
-				if (manState >= 4) {
-					manState = 0;
-				}
-			}
-
-			// make the guy fall
-			velocity += gravity;
-			manY -= velocity;
-
-			// make him run on the ground, not fall below the ground
-			if(manY <= 0){
-				manY = 0;
-			}
-
-			// on screen touch...
-			if(Gdx.input.justTouched()){
-				// make the guy jump
-				velocity = -20;
-			}
+			makeDudeWalk();
+			makeDudeJump();
+			makeDudeFall();
 		}
 		else if(gameState == 0){
 			// Waiting to start
@@ -143,34 +91,114 @@ public class CoinMan extends ApplicationAdapter {
 		}
 		else if(gameState == 2){
 			// GAME OVER
-			
-			// make the guy fall
-			velocity += gravity;
-			manY -= velocity;
-
-			// make him run on the ground, not fall below the ground
-			if(manY <= 0){
-				manY = 0;
-			}
+			makeDudeFall();
 
 			if(Gdx.input.justTouched()){
-				// reset everything
-				gameState = 1;
-				manY = Gdx.graphics.getHeight()/2;
-				score = 0;
-				velocity = 0;
-				coinXs.clear();
-				coinYs.clear();
-				bombXs.clear();
-				bombYs.clear();
-				coinCount = 0;
-				bombCount = 0;
-				coinRectangles.clear();
-				bombRectangles.clear();
+				restart();
 			}
 		}
 
+		drawDude();
 
+		checkCoinCaught();
+		checkBombCaught();
+
+		// show the score
+		font.draw(batch, String.valueOf(score), 100, 200);
+
+		// in the end, when we have everything we want showing on screen
+		batch.end();
+	}
+
+	public void drawBackground(){
+		// show the background
+		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+	}
+
+	public void generateCoins(){
+		coinCount++;
+		// generate a coin every 100 renders
+		if(coinCount >= 100){
+			coinCount = 0;
+			makeCoin();
+		}
+
+		coinRectangles.clear();
+		// loop thought the coins to make them move
+		for(int i=0; i<coinXs.size(); i++){
+			batch.draw(coin, coinXs.get(i), coinYs.get(i));
+			coinXs.set(i, coinXs.get(i)-4);
+			coinRectangles.add(new Rectangle(coinXs.get(i), coinYs.get(i), coin.getWidth(), coin.getHeight()));
+		}
+	}
+
+	public void generateBombs(){
+		bombCount++;
+		// generate a coin every 100 renders
+		if(bombCount >= 271){
+			bombCount = 0;
+			makeBomb();
+		}
+
+		bombRectangles.clear();
+		// loop thought the coins to make them move
+		for(int i=0; i<bombXs.size(); i++){
+			batch.draw(bomb, bombXs.get(i), bombYs.get(i));
+			bombXs.set(i, bombXs.get(i)-6);
+			bombRectangles.add(new Rectangle(bombXs.get(i), bombYs.get(i), bomb.getWidth(), bomb.getHeight()));
+		}
+	}
+
+	public void makeDudeWalk(){
+		pause++;
+		// make the man move once every 8 renders
+		if(pause >= 8) {
+			pause = 0;
+			manState++;
+
+			if (manState >= 4) {
+				manState = 0;
+			}
+		}
+	}
+
+	public void makeDudeJump(){
+		// on screen touch...
+		if(Gdx.input.justTouched()){
+			// make the guy jump
+			velocity = -20;
+		}
+	}
+
+	public void makeDudeFall(){
+		// make the guy fall
+		velocity += gravity;
+		manY -= velocity;
+
+		// make him run on the ground, not fall below the ground
+		if(manY <= 0){
+			manY = 0;
+		}
+	}
+
+	public void restart(){
+		// reset everything
+		gameState = 1;
+		manY = Gdx.graphics.getHeight()/2;
+		score = 0;
+		velocity = 0;
+		coinXs.clear();
+		coinYs.clear();
+		bombXs.clear();
+		bombYs.clear();
+		coinCount = 0;
+		bombCount = 0;
+		coinRectangles.clear();
+		bombRectangles.clear();
+	}
+
+	public void drawDude(){
 		// now the man appears on top of the background
 		int manX = Gdx.graphics.getWidth()/2 - man[manState].getWidth()/2;
 
@@ -183,6 +211,9 @@ public class CoinMan extends ApplicationAdapter {
 		batch.draw(dude, manX, manY);	// divided by 2 to show on the center fo the screen
 		manRectangle = new Rectangle(manX, manY, man[manState].getWidth(), man[manState].getHeight());
 
+	}
+
+	public void checkCoinCaught(){
 		// loop thought the coins to check if there was a collision
 		for(int i=0; i<coinRectangles.size(); i++){
 			if(Intersector.overlaps(manRectangle, coinRectangles.get(i))){
@@ -195,7 +226,9 @@ public class CoinMan extends ApplicationAdapter {
 				break;
 			}
 		}
+	}
 
+	public void checkBombCaught(){
 		// loop thought the bombs to check if there was a collision
 		for(int i=0; i<bombRectangles.size(); i++){
 			if(Intersector.overlaps(manRectangle, bombRectangles.get(i))){
@@ -203,13 +236,6 @@ public class CoinMan extends ApplicationAdapter {
 				gameState = 2;
 			}
 		}
-
-		// show the score
-		font.draw(batch, String.valueOf(score), 100, 200);
-
-
-		// in the end, when we have everything we want showing on screen
-		batch.end();
 	}
 
 	public void makeCoin(){
