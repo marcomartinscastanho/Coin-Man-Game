@@ -2,7 +2,9 @@ package com.martinscastanho.marco.coinman.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
@@ -33,9 +35,12 @@ public class CoinMan extends ApplicationAdapter {
 	Texture bomb;
 	int bombCount;
 
-	Rectangle manRectangle;
+	int score = 0;
 
+	Rectangle manRectangle;
 	Random random;
+
+	BitmapFont font;
 
 
 	@Override
@@ -53,6 +58,11 @@ public class CoinMan extends ApplicationAdapter {
 		coin = new Texture("coin.png");
 		bomb = new Texture("bomb.png");
 		random = new Random();	// randomize at which height the coins show up
+
+		// show the score on the screen
+		font = new BitmapFont();
+		font.setColor(Color.WHITE);
+		font.getData().setScale(10);
 	}
 
 	@Override
@@ -129,7 +139,13 @@ public class CoinMan extends ApplicationAdapter {
 		// loop thought the coins to check if there was a collision
 		for(int i=0; i<coinRectangles.size(); i++){
 			if(Intersector.overlaps(manRectangle, coinRectangles.get(i))){
-				Gdx.app.log("Collision!", "COIN!");
+				score++;
+
+				// remove the coin so that we don't score it more than once
+				coinRectangles.remove(i);
+				coinXs.remove(i);
+				coinYs.remove(i);
+				break;
 			}
 		}
 
@@ -139,6 +155,9 @@ public class CoinMan extends ApplicationAdapter {
 				Gdx.app.log("Collision!", "BOMB!");
 			}
 		}
+
+		// show the score
+		font.draw(batch, String.valueOf(score), 100, 200);
 
 
 		// in the end, when we have everything we want showing on screen
